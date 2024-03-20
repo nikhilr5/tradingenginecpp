@@ -3,15 +3,17 @@
 #include <string>
 #include <atomic>
 
-
 // Declare the class
-class Orderbook {
+class KlineData {
 public:
     // Constructor
-    Orderbook();
+    KlineData();
 
     //fields
-    std::atomic<double> MarketPrice;
+    std::atomic<double> MostRecentEmaPriceMinima;
+
+    std::atomic<double> EmaPrice;
+    std::atomic<double> PreviousEmaPrice;
 
 
     // Member function declaration
@@ -19,10 +21,7 @@ public:
 
 
 private:
-    //fields
-    std::map<double, double> Bids;
-    std::map<double, double> Asks;
 
     //functions
-    void SetMarketPrice();
+    void CheckForMinima();
 };

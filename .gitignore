@@ -1,0 +1,17 @@
+*.zip
+*.log
+*.vsidx
+*.tlog
+*.obj
+*.pdb
+*.vcxproj
+*.filters
+*.idb
+
+boost/
+../.vs/
+../.vs/tradingenginecpp2/FileContentIndex/
+
+
+
+../.vs/tradingenginecpp2/FileContentIndex/f435e74b-bab3-4e86-a9bb-51c4dc7fdd4f.vsidx

@@ -44,6 +44,8 @@ void Orderbook::HandleUpdate(std::string update) {
 
             Asks.insert_or_assign(price, quantity);
         }
+        std::cout << Bids.size() << std::endl;
+        SetMarketPrice();
     }
     catch (const std::exception& e) {
         // Catch block to handle the exception and print out the exception information
@@ -51,9 +53,9 @@ void Orderbook::HandleUpdate(std::string update) {
     }
 }
 
-double Orderbook::GetMarketPrice() {
+void Orderbook::SetMarketPrice() {
     if (Bids.empty() || Asks.empty())
-        return -1;
+        MarketPrice = -1;
 
-    return Bids.rbegin()->first;
+    MarketPrice = Bids.rbegin()->first;
 }
