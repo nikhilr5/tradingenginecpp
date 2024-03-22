@@ -1,11 +1,13 @@
-#include <boost/boost/asio.hpp>
-#include "../boost/asio/ssl.hpp"
-#include "../boost/beast.hpp"
+#include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
+#include <boost/beast.hpp>
 #include <boost/beast/ssl.hpp>
 #include <iostream>
 #include "Orderbook.h"
 #include "WebsocketConnection.h"
 #include "KlineData.h"
+#include "Analyzer.h"
+#include "Trade.h"
 
 namespace net = boost::asio;
 namespace ssl = net::ssl;
@@ -110,8 +112,13 @@ void ConnectOrderbookWebsocket(const char* extension, std::string subscription_m
         while (true) {
             orderData.read_Socket();
             orderbook->HandleUpdate(orderData.get_socket_data());
+
+            Analyzer::UpdateIndicators();
+            if (Analyzer::DoIndicatorsPass()) //check if indictors pass to place trade on ever orderbook update
+                PlaceTrade("Buy");
+
             orderData.buffer_clear();
-            std::cout << orderbook->MarketPrice << std::endl;
+            //std::cout << MarketPrice << std::endl;
         }
         orderData.webSocket_close();
     }

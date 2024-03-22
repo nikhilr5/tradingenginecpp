@@ -2,7 +2,8 @@
 #include "KlineData.h"
 #include "../../json/include/nlohmann/json.hpp"
 #include <string>
-#include
+#include "Utils.h"
+#include "Analyzer.h"
 
 using json = nlohmann::json;
 
@@ -21,20 +22,17 @@ void KlineData::HandleUpdate(std::string update) {
 		std::string openStr = data["open"];
 		std::string highStr = data["high"];
 
+		long long timestamp = data["timestamp"];
 		double close = std::stod(closeStr);
 		bool confirm = data["confirm"];
 		double high = std::stod(highStr);
 		double low = std::stod(lowStr);
 		double open = std::stod(openStr);
 
-
 		if (!confirm)
 			return; //not end of stick
 
-		PreviousEmaPrice = EmaPrice;
-		EmaPrice = CalculateEma(close, PreviousEma, 2);
-
-		std::cout << "ema price: " << EMAPrice << std::endl;
+		Analyzer::UpdateEmaInfo(close, timestamp);
 	}
 	catch (const std::exception& e) {
 		// Catch block to handle the exception and print out the exception information

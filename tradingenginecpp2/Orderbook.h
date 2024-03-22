@@ -4,6 +4,7 @@
 #include <atomic>
 
 
+
 // Declare the class
 class Orderbook {
 public:
@@ -11,7 +12,7 @@ public:
     Orderbook();
 
     //fields
-    std::atomic<double> MarketPrice;
+    static std::atomic <double> MarketPrice;
 
 
     // Member function declaration

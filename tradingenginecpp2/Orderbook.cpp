@@ -5,9 +5,12 @@
 
 using json = nlohmann::json;
 
+//fields
+std::atomic <double> Orderbook::MarketPrice;
 
 // Constructor definition
-Orderbook::Orderbook() {}
+Orderbook::Orderbook() {
+}
 
 // Member function definition
 void Orderbook::HandleUpdate(std::string update) {
@@ -44,7 +47,6 @@ void Orderbook::HandleUpdate(std::string update) {
 
             Asks.insert_or_assign(price, quantity);
         }
-        std::cout << Bids.size() << std::endl;
         SetMarketPrice();
     }
     catch (const std::exception& e) {
@@ -57,5 +59,5 @@ void Orderbook::SetMarketPrice() {
     if (Bids.empty() || Asks.empty())
         MarketPrice = -1;
 
-    MarketPrice = Bids.rbegin()->first;
+    Orderbook::MarketPrice = Bids.rbegin()->first;
 }
