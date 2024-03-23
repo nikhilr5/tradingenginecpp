@@ -1,10 +1,19 @@
 #include <iostream>
 #include "WebsocketConnection.h"
 #include <thread>
-#include <boost/system/error_code.hpp>
+#include <string>
+#include "Analyzer.h"
+#include "Trade.h"
 
-int main()
+
+int main(int argc, char* argv[])
 {
+    Analyzer::Level = std::stod(argv[1]);
+    std::cout << "Setting support level to " << Analyzer::Level << std::endl;
+
+    PlaceTrade("Buy");
+
+    std::cin.get();
     //start all threads
     std::thread orderbook_thread(ConnectOrderbookWebsocket, "/v5/public/linear", R"({"op": "subscribe", "args": ["orderbook.200.ETHUSDT"]})");
     std::thread kline_thread(ConnectKlineWebsocket, "/v5/public/linear", R"({"op": "subscribe", "args": ["kline.1.ETHUSDT"]})");

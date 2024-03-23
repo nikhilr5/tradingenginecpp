@@ -2,6 +2,9 @@
 #include "Analyzer.h"
 #include <iostream>
 #include <chrono>
+#include <openssl/hmac.h>
+#include <sstream>
+
 
 
 
@@ -25,4 +28,27 @@ double getMinutesBetweenEpochTimes(long long timestamp1, long long timestamp2) {
 	double diffInMinutes = static_cast<double>(diffInSeconds) / 60.0;
 
 	return diffInMinutes;
+}
+
+
+std::string GeneratePostSignature(const nlohmann::json& parameters, std::string apiKey, std::string apiSecret, std::string timestamp) {
+	std::string paramJson = parameters.dump();
+	std::string rawData = timestamp + apiKey + "5000" + paramJson;
+	return ComputeSignature(rawData, apiSecret);
+}
+
+std::string GetTimestamp() {
+	return std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+}
+
+std::string ComputeSignature(const std::string& data, std::string apiSecret) {
+	unsigned char* digest = HMAC(EVP_sha256(), apiSecret.c_str(), static_cast<int>(apiSecret.length()),
+		(unsigned char*)data.c_str(), static_cast<int>(data.size()), NULL, NULL);
+
+	std::ostringstream result;
+	for (size_t i = 0; i < 32; i++) {
+		result << std::hex << std::setw(2) << std::setfill('0') << (int)digest[i];
+	}
+
+	return result.str();
 }

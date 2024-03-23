@@ -4,7 +4,7 @@
 #include <iostream>
 
 namespace Analyzer {
-	double Level = 3600.0;
+	double Level;
 	std::atomic<bool> TradePlaced = false;
 	std::atomic<bool> CrossedLevel = false;
 	std::atomic<double> MostRecentEmaPriceMinima = 0;
@@ -14,6 +14,7 @@ namespace Analyzer {
 	std::atomic<long long> PreviousEmaTime;
 	std::atomic<double> PreviousDerrivative;
 	std::atomic<double> Derrivative;
+	std::atomic<int> EmaCount = 0;
 
 	bool DoIndicatorsPass() {
 
@@ -32,8 +33,9 @@ namespace Analyzer {
 
 	void UpdateEmaInfo(double close, long long currentTime) {
 
+		EmaCount += 1;
 		PreviousEmaPrice.store(EmaPrice.load());
-		EmaPrice = CalculateEma(close, PreviousEmaPrice, 2);
+		EmaPrice = CalculateEma(close, PreviousEmaPrice, EmaCount < 25 ? EmaCount.load() : 25);
 
 		PreviousEmaTime.store(EmaTime.load());
 		EmaTime = currentTime;
