@@ -8,3 +8,5 @@ double CalculateStopLoss();
 double CalculateTakeProfit();
 
 double CalculateLimitPrice();
+
+void SetLeverage();

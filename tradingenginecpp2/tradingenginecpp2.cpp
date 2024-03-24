@@ -39,6 +39,9 @@ int main(int argc, char* argv[])
 
     std::cout << "Setting support level to " << Analyzer::Level << std::endl;
 
+    //set leverage
+    SetLeverage();
+
     //start all threads
     std::thread orderbook_thread(ConnectOrderbookWebsocket, "/v5/public/linear", R"({"op": "subscribe", "args": ["orderbook.200.)" + TradingEngine::Symbol + R"("]})");
     std::thread kline_thread(ConnectKlineWebsocket, "/v5/public/linear", R"({"op": "subscribe", "args": ["kline.1.)" + TradingEngine::Symbol + R"("]})");

@@ -64,3 +64,33 @@ double CalculateLimitPrice(){
     double mp = Orderbook::MarketPrice;
     return mp * (1 + TradingEngine::LimitPriceDifferenceFromMarketPrice);
 }
+
+void SetLeverage() {
+    nlohmann::json parameters = 
+    {
+        {"category", "linear"},
+        {"symbol", TradingEngine::Symbol},
+        {"buyLeverage", std::to_string(TradingEngine::Leverage)},
+        {"sellLeverage", std::to_string(TradingEngine::Leverage)}
+    };
+
+    std::cout << "Setting leverage to " << TradingEngine::Leverage << std::endl;
+    auto timestamp = GetTimestamp();
+    std::string signature = GeneratePostSignature(parameters, timestamp, RecvWindow);
+    std::string jsonPayload = parameters.dump();
+
+
+    httplib::SSLClient client("api.bybit.com", 443); // 443 is the default port for HTTPS
+    httplib::Headers headers = {
+        {"X-BAPI-API-KEY", TradingEngine::ApiKey},
+        {"X-BAPI-SIGN", signature},
+        {"X-BAPI-SIGN-TYPE", "2"},
+        {"X-BAPI-TIMESTAMP", timestamp},
+        {"X-BAPI-RECV-WINDOW", RecvWindow}
+    };
+
+    auto res = client.Post("/v5/position/set-leverage", headers, jsonPayload, "application/json");
+    if (res) {
+        std::cout << res->body << std::endl;
+    }
+}
