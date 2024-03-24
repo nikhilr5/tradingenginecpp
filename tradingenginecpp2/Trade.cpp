@@ -7,23 +7,28 @@
 #include <httplib.h>
 #include "Utils.h"
 #include "tradingenginecpp2.h"
+#include "Orderbook.h"
 
 const std::string RecvWindow = "10000";
-const std::string Symbol = "ETHUSDT";
-const std::string Quantity = "0.01";
 
 void PlaceTrade(std::string side) {
     
-    std::cout << "Placing Order to buy symbol=" << Symbol << " quantity=" << Quantity << std::endl;
+    std::cout << "Placing Order to buy symbol=" << TradingEngine::Symbol << " quantity=" << TradingEngine::Quantity << std::endl;
+    std::string limitPrice = std::to_string(CalculateLimitPrice());
+    std::string takeProfit = std::to_string(CalculateTakeProfit());
+    std::string stopLoss = std::to_string(CalculateStopLoss());
 
     nlohmann::json parameters = 
     {
         {"category", "linear"},
-        {"symbol", Symbol},
+        {"symbol", TradingEngine::Symbol},
         {"side", side},
         {"positionIdx", 0},
-        {"orderType", "Market"},
-        {"qty", Quantity},
+        {"orderType", "Limit"},
+        {"price", limitPrice},
+        {"takeProfit", takeProfit},
+        {"stopLoss", stopLoss},
+        {"qty", std::to_string(TradingEngine::Quantity)},
         {"timeInForce", "GTC"}
     };
     auto timestamp = GetTimestamp();
@@ -44,4 +49,18 @@ void PlaceTrade(std::string side) {
     if (res) {
         std::cout << res->body << std::endl;
     }
+}
+
+double CalculateStopLoss(){
+    double mp = Orderbook::MarketPrice;
+    return mp - (mp * (TradingEngine::StopLossPercent / TradingEngine::Leverage / 100));
+}
+
+double CalculateTakeProfit(){
+    double mp = Orderbook::MarketPrice;
+    return mp + (mp * (TradingEngine::TakeProfitPercent / TradingEngine::Leverage /100));
+}
+double CalculateLimitPrice(){
+    double mp = Orderbook::MarketPrice;
+    return mp * (1 + TradingEngine::LimitPriceDifferenceFromMarketPrice);
 }
