@@ -1,39 +1,43 @@
+#define WIN32_LEAN_AND_MEAN
+
+#define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "Trade.h"
 #include <nlohmann/json.hpp>
 #include <iostream>
-#include <cpp-httplib/httplib.h>
+#include <httplib.h>
 #include "Utils.h"
+#include "tradingenginecpp2.h"
 
+const std::string RecvWindow = "10000";
+const std::string Symbol = "ETHUSDT";
+const std::string Quantity = "0.01";
 
 void PlaceTrade(std::string side) {
-
-    std::string apiKey = "lGKEymIrY3QeL11QeS";
-
-    std::string apiSecret = "fMODkw1OBA80tsZadoyCEbXW4EGBsGbQgheI";
+    
+    std::cout << "Placing Order to buy symbol=" << Symbol << " quantity=" << Quantity << std::endl;
 
     nlohmann::json parameters = 
     {
         {"category", "linear"},
-        {"symbol", "ETHUSDT"},
+        {"symbol", Symbol},
         {"side", side},
         {"positionIdx", 0},
-        {"orderType", "Limit"},
-        {"qty", "0.01"},
-        {"price", "18900"},
+        {"orderType", "Market"},
+        {"qty", Quantity},
         {"timeInForce", "GTC"}
     };
     auto timestamp = GetTimestamp();
-    std::string signature = GeneratePostSignature(parameters, apiKey, apiSecret, timestamp);
+    std::string signature = GeneratePostSignature(parameters, timestamp, RecvWindow);
     std::string jsonPayload = parameters.dump();
 
 
-    httplib::Client client("api.bybit.com", 443); // 443 is the default port for HTTPS
+    httplib::SSLClient client("api.bybit.com", 443); // 443 is the default port for HTTPS
     httplib::Headers headers = {
-        {"X-BAPI-API-KEY", apiKey},
+        {"X-BAPI-API-KEY", TradingEngine::ApiKey},
         {"X-BAPI-SIGN", signature},
         {"X-BAPI-SIGN-TYPE", "2"},
         {"X-BAPI-TIMESTAMP", timestamp},
-        {"X-BAPI-RECV-WINDOW", "5000"}
+        {"X-BAPI-RECV-WINDOW", RecvWindow}
     };
 
     auto res = client.Post("/v5/order/create", headers, jsonPayload, "application/json");

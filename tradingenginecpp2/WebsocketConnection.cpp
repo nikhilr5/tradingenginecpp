@@ -100,6 +100,7 @@ private:
 
 
 void ConnectOrderbookWebsocket(const char* extension, std::string subscription_message) {
+
     Exchange orderData{ "bybit", "stream.bybit.com" };
     std::shared_ptr<Orderbook> orderbook = std::make_shared<Orderbook>();
 
@@ -109,6 +110,8 @@ void ConnectOrderbookWebsocket(const char* extension, std::string subscription_m
         if (orderData.is_socket_open()) {
             orderData.write_Socket(subscription_message);
         }
+
+        std::cout << "Connected to public orderbook websocket..." << std::endl;
         while (true) {
             orderData.read_Socket();
             orderbook->HandleUpdate(orderData.get_socket_data());
@@ -136,6 +139,7 @@ void ConnectKlineWebsocket(const char* extension, std::string subscription_messa
         if (ws_klineData.is_socket_open()) {
             ws_klineData.write_Socket(subscription_message);
         }
+        std::cout << "Connected to public kline websocket..." << std::endl;
         while (true) {
             ws_klineData.read_Socket();
             klineData->HandleUpdate(ws_klineData.get_socket_data());

@@ -4,6 +4,7 @@
 #include <chrono>
 #include <openssl/hmac.h>
 #include <sstream>
+#include "tradingenginecpp2.h"
 
 
 
@@ -31,18 +32,18 @@ double getMinutesBetweenEpochTimes(long long timestamp1, long long timestamp2) {
 }
 
 
-std::string GeneratePostSignature(const nlohmann::json& parameters, std::string apiKey, std::string apiSecret, std::string timestamp) {
+std::string GeneratePostSignature(const nlohmann::json& parameters, std::string timestamp, std::string recvWindow) {
 	std::string paramJson = parameters.dump();
-	std::string rawData = timestamp + apiKey + "5000" + paramJson;
-	return ComputeSignature(rawData, apiSecret);
+	std::string rawData = timestamp + TradingEngine::ApiKey + recvWindow + paramJson;
+	return ComputeSignature(rawData);
 }
 
 std::string GetTimestamp() {
-	return std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+	return std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() - 8000);
 }
 
-std::string ComputeSignature(const std::string& data, std::string apiSecret) {
-	unsigned char* digest = HMAC(EVP_sha256(), apiSecret.c_str(), static_cast<int>(apiSecret.length()),
+std::string ComputeSignature(const std::string& data) {
+	unsigned char* digest = HMAC(EVP_sha256(), TradingEngine::ApiSecret.c_str(), static_cast<int>(TradingEngine::ApiSecret.length()),
 		(unsigned char*)data.c_str(), static_cast<int>(data.size()), NULL, NULL);
 
 	std::ostringstream result;
