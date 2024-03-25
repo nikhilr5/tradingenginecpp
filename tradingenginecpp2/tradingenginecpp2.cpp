@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include "tradingenginecpp2.h"
 #include <chrono>
+#include <vector>
 
 
 std::string TradingEngine::ApiKey ="";
@@ -42,15 +43,11 @@ int main(int argc, char* argv[])
     //set leverage
     SetLeverage();
 
-    //start all threads
     std::thread orderbook_thread(ConnectOrderbookWebsocket, "/v5/public/linear", R"({"op": "subscribe", "args": ["orderbook.200.)" + TradingEngine::Symbol + R"("]})");
     std::thread kline_thread(ConnectKlineWebsocket, "/v5/public/linear", R"({"op": "subscribe", "args": ["kline.1.)" + TradingEngine::Symbol + R"("]})");
 
-    std::this_thread::sleep_for(std::chrono::seconds(10));
-    PlaceTrade("Buy");
 
-    //wait for all threads to finish
-    orderbook_thread.join(); 
+    orderbook_thread.join();
     kline_thread.join();
 
     return 0;
