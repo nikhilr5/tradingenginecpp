@@ -13,6 +13,7 @@ Leverage="3"
 LimitPriceDifferenceFromMarketPrice="0.003"
 Symbol="ETHUSDT"
 EmaPeriod="25"
+LogFileDirectoryLocation="./Logs"
 
 # Run the executable with the provided arguments
-./tradingenginecpp2exe "$Level" "$TakeProfitPercent" "$StopLossPercent" "$Quantity" "$Leverage" "$LimitPriceDifferenceFromMarketPrice" "$Symbol" "$EmaPeriod"
+./tradingenginecpp2exe "$Level" "$TakeProfitPercent" "$StopLossPercent" "$Quantity" "$Leverage" "$LimitPriceDifferenceFromMarketPrice" "$Symbol" "$EmaPeriod" "$LogFileDirectoryLocation"
