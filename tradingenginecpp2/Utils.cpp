@@ -5,6 +5,8 @@
 #include <openssl/hmac.h>
 #include <sstream>
 #include "tradingenginecpp2.h"
+#include <ctime>
+#include <iomanip>
 
 
 
@@ -52,4 +54,13 @@ std::string ComputeSignature(const std::string& data) {
 	}
 
 	return result.str();
+}
+
+std::string GetCurrentTimeStr() {
+	std::time_t currentTime = std::time(nullptr);
+
+    // Convert time to string
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&currentTime), "%Y%m%d_%H%M%S");
+    return ss.str();
 }

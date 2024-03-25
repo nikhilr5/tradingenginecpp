@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-echo "Usage: $0 <Level> <TakeProfitPercent> <StopLossPercent> <Quantity> <Leverage> <LimitPriceDifferenceFromMarketPrice> <Symbol>"
+echo "Usage: $0 <Level> <TakeProfitPercent> <StopLossPercent> <Quantity> <Leverage> <LimitPriceDifferenceFromMarketPrice> <Symbol> <EmaPeriod>"
 
 
 # Assign arguments to variables
@@ -12,6 +12,7 @@ Quantity="0.01"
 Leverage="3"
 LimitPriceDifferenceFromMarketPrice="0.003"
 Symbol="ETHUSDT"
+EmaPeriod="25"
 
 # Run the executable with the provided arguments
-./tradingenginecpp2exe "$Level" "$TakeProfitPercent" "$StopLossPercent" "$Quantity" "$Leverage" "$LimitPriceDifferenceFromMarketPrice" "$Symbol"
+./tradingenginecpp2exe "$Level" "$TakeProfitPercent" "$StopLossPercent" "$Quantity" "$Leverage" "$LimitPriceDifferenceFromMarketPrice" "$Symbol" "$EmaPeriod"

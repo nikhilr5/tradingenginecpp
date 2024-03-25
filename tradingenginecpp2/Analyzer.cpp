@@ -2,6 +2,7 @@
 #include "Orderbook.h"
 #include "Utils.h"
 #include <iostream>
+#include "tradingenginecpp2.h"
 
 namespace Analyzer {
 	double Level;
@@ -35,7 +36,7 @@ namespace Analyzer {
 
 		EmaCount += 1;
 		PreviousEmaPrice.store(EmaPrice.load());
-		EmaPrice = CalculateEma(close, PreviousEmaPrice, EmaCount < 25 ? EmaCount.load() : 25);
+		EmaPrice = CalculateEma(close, PreviousEmaPrice, EmaCount < TradingEngine::EmaPeriod ? EmaCount.load() : TradingEngine::EmaPeriod);
 
 		PreviousEmaTime.store(EmaTime.load());
 		EmaTime = currentTime;
@@ -48,7 +49,8 @@ namespace Analyzer {
 
 		CheckForLocalMinima();
 
-		std::cout << "EmaPrice=" << EmaPrice << " derrivative=" << Derrivative << " MarketPrice=" << Orderbook::MarketPrice << std::endl;
+		std::cout << "EmaPrice=" << EmaPrice << " derrivative=" << Derrivative << " MarketPrice=" << Orderbook::MarketPrice << " Timestamp=" << currentTime << std::endl;
+		*(TradingEngine::OutputFile) << "EmaPrice=" << EmaPrice << " derrivative=" << Derrivative << " MarketPrice=" << Orderbook::MarketPrice << " Timestamp=" << currentTime << std::endl;
 	}
 
 	void CheckForLocalMinima() {

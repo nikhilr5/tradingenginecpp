@@ -1,4 +1,6 @@
 #include <string>
+#include <fstream>
+#include <sstream>
 
 namespace TradingEngine{
     extern std::string ApiKey;
@@ -9,4 +11,6 @@ namespace TradingEngine{
     extern double Leverage;
     extern double LimitPriceDifferenceFromMarketPrice;
     extern std::string Symbol;
+    extern double EmaPeriod;
+    extern std::ofstream* OutputFile;
 }

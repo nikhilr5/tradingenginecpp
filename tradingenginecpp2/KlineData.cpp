@@ -1,6 +1,6 @@
 #include <iostream>
 #include "KlineData.h"
-#include "../../json/include/nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 #include <string>
 #include "Utils.h"
 #include "Analyzer.h"
