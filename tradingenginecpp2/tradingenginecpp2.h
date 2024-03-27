@@ -1,6 +1,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <atomic>
 
 namespace TradingEngine{
     extern std::string ApiKey;
@@ -13,4 +14,5 @@ namespace TradingEngine{
     extern std::string Symbol;
     extern double EmaPeriod;
     extern std::ofstream* OutputFile;
+    extern std::atomic<int> AttemptsForLevel;
 }

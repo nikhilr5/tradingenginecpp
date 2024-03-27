@@ -49,8 +49,11 @@ namespace Analyzer {
 
 		CheckForLocalMinima();
 
-		std::cout << "EmaPrice=" << EmaPrice << " derrivative=" << Derrivative << " MarketPrice=" << Orderbook::MarketPrice << " Timestamp=" << currentTime << std::endl;
-		*(TradingEngine::OutputFile) << "EmaPrice=" << EmaPrice << " derrivative=" << Derrivative << " MarketPrice=" << Orderbook::MarketPrice << " Timestamp=" << currentTime << std::endl;
+		auto localTime = GetLocalTime(currentTime);
+		std::ostringstream oss;
+		oss << "EmaPrice=" << EmaPrice << " derrivative=" << Derrivative << " MarketPrice=" << Orderbook::MarketPrice << " Timestamp=" << localTime;
+		std::cout << oss.str() << std::endl;
+		*(TradingEngine::OutputFile) << oss.str() << std::endl;
 	}
 
 	void CheckForLocalMinima() {
@@ -77,6 +80,7 @@ namespace Analyzer {
 			std::cout << "Support level reclaim without all constraints being met. Mp=" << Orderbook::MarketPrice << ", lastMinima=" << MostRecentEmaPriceMinima << ", Level= " << Level
 				<< ", CrossedLevel=" << CrossedLevel << ", time= get time";
 			CrossedLevel = false;
+			MostRecentEmaPriceMinima = -1;
 		}
 	}
 }

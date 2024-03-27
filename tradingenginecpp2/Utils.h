@@ -15,3 +15,5 @@ std::string GetTimestamp();
 std::string GeneratePostSignature(const nlohmann::json& parameters, std::string timestamp, std::string recvWindow);
 
 std::string GetCurrentTimeStr();
+
+std::string GetLocalTime(long long ts);

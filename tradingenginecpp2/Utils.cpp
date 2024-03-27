@@ -64,3 +64,16 @@ std::string GetCurrentTimeStr() {
     ss << std::put_time(std::localtime(&currentTime), "%Y%m%d_%H%M%S");
     return ss.str();
 }
+
+std::string GetLocalTime(long long ts) {
+	auto ts2 = ts / 1000.0;
+	std::chrono::time_point<std::chrono::system_clock> time_point =
+        std::chrono::system_clock::from_time_t(ts2);
+
+	std::time_t time = std::chrono::system_clock::to_time_t(time_point);
+    std::tm* local_time = std::localtime(&time);
+
+	char timeStr[100];
+	strftime(timeStr, sizeof(timeStr), "%m-%d-%Y %H:%M:S", local_time);
+	return timeStr;
+}

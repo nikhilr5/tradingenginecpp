@@ -36,6 +36,6 @@ void KlineData::HandleUpdate(std::string update) {
 	}
 	catch (const std::exception& e) {
 		// Catch block to handle the exception and print out the exception information
-		std::cerr << "Exception caught: " << e.what() << std::endl;
+		std::cerr << "Exception caught in kline ws: " << e.what() << std::endl;
 	}
 }

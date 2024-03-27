@@ -11,7 +11,7 @@
 #include <fstream>
 #include <sstream>
 #include "Utils.h"
-
+#include <atomic>
 
 std::string TradingEngine::ApiKey ="";
 std::string TradingEngine::ApiSecret="";
@@ -23,7 +23,7 @@ double TradingEngine::LimitPriceDifferenceFromMarketPrice;
 std::string TradingEngine::Symbol;
 double TradingEngine::EmaPeriod;
 std::ofstream* TradingEngine::OutputFile;
-
+std::atomic<int> TradingEngine::AttemptsForLevel;
 
 int main(int argc, char* argv[])
 {
@@ -37,8 +37,8 @@ int main(int argc, char* argv[])
         TradingEngine::LimitPriceDifferenceFromMarketPrice = std::stod(argv[6]);
         TradingEngine::Symbol = argv[7];
         TradingEngine::EmaPeriod = std::stod(argv[8]);
-
         outputFileDirectory = argv[9];
+        TradingEngine::AttemptsForLevel = std::stoi(argv[10]);
     }
     catch (const std::exception& e){
         std::cout << "Exception caught when trying to grab all parameters needed for executable. Exception=" << e.what() << std::endl;

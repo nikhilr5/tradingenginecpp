@@ -12,6 +12,7 @@
 #include "tradingenginecpp2.h"
 #include <chrono>
 #include <nlohmann/json.hpp>
+#include "PrivateData.h"
 
 namespace net = boost::asio;
 namespace ssl = net::ssl;
@@ -132,6 +133,13 @@ private:
 
 };
 
+void SendPingMessage(Exchange* private_ws) {
+    while (true) {
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::string ping_message = R"({"op": "ping"})";
+        private_ws->write_Socket(ping_message);
+    }
+}
 
 void ConnectOrderbookWebsocket(const char* extension, std::string subscription_message) {
     while (true) {
@@ -194,21 +202,24 @@ void ConnectKlineWebsocket(const char* extension, std::string subscription_messa
 void ConnectPrivateWebsocket() {
     while (true) {
         Exchange ws_private{"bybit", "stream.bybit.com"};
+        std::unique_ptr<PrivateData> privateData = std::make_unique<PrivateData>();
         try {
             ws_private.init_webSocket("stream.bybit.com", "443", "/v5/private");
             ws_private.authenticate();
 
             if (ws_private.is_socket_open()) {
-                std::string subscription_message = R"({"op": "subscribe", "args": ["order"]})";
+                std::string subscription_message = R"({"op": "subscribe", "args": ["order", "position"]})";
                 ws_private.write_Socket(subscription_message);
             }
             std::cout << "Connected to private websocket..." << std::endl;
+            std::thread send_ping_thread(SendPingMessage, &ws_private);
             while (true) {
                 ws_private.read_Socket();
-                std::cout << ws_private.get_socket_data();
+                privateData->HandleUpdate(ws_private.get_socket_data());
 
                 ws_private.buffer_clear();
             }
+            send_ping_thread.join();
             ws_private.webSocket_close();
             
 
