@@ -1,7 +1,9 @@
 #include <iostream>
 #include "Orderbook.h"
-#include "../../json/include/nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 #include <vector>
+#include <mutex>
+#include "Analyzer.h"
 
 using json = nlohmann::json;
 
@@ -56,6 +58,8 @@ void Orderbook::HandleUpdate(std::string update) {
 }
 
 void Orderbook::SetMarketPrice() {
+    std::lock_guard<std::mutex> guard(Analyzer::IndicatorLock); //scoped lock
+
     if (Bids.empty() || Asks.empty())
         MarketPrice = -1;
 

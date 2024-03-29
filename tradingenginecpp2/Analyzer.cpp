@@ -16,10 +16,13 @@ namespace Analyzer {
 	std::atomic<double> PreviousDerrivative;
 	std::atomic<double> Derrivative;
 	std::atomic<int> EmaCount = 0;
+	std::mutex IndicatorLock;
 
 	bool DoIndicatorsPass() {
+		std::lock_guard<std::mutex> guard(IndicatorLock); //scoped lock
+		std::lock_guard<std::mutex> guard2(TradingEngine::TradeLock);
 
-		if (TradePlaced) //no trade placed yet
+		if (TradePlaced || TradingEngine::AttemptsForLevel <= 0) //no trade placed yet
 			return false;
 
 		if (!CrossedLevel) //has to have crossed level
@@ -57,6 +60,7 @@ namespace Analyzer {
 	}
 
 	void CheckForLocalMinima() {
+		std::lock_guard<std::mutex> guard(IndicatorLock); //scoped lock
 		if (CrossedLevel) {
 			if (PreviousDerrivative < 0 && Derrivative > 0)
 			{
@@ -67,6 +71,8 @@ namespace Analyzer {
 	}
 
 	void UpdateIndicators() {
+		std::lock_guard<std::mutex> guard(IndicatorLock); //scoped lock
+
 		if (TradePlaced)
 			return;
 

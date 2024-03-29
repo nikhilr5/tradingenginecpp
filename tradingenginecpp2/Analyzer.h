@@ -1,6 +1,7 @@
 #pragma once
 #include <atomic>
 #include <ctime>
+#include <mutex>
 
 namespace Analyzer {
 	//global fields
@@ -14,7 +15,7 @@ namespace Analyzer {
 	extern std::atomic<long long> PreviousEmaTime;
 	extern std::atomic<double> Derrivative;
 	extern std::atomic<double> PreviousDerrivative;
-
+	extern std::mutex IndicatorLock;
 
 	bool DoIndicatorsPass();
 

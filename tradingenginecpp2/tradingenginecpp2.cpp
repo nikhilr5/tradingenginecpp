@@ -13,17 +13,20 @@
 #include "Utils.h"
 #include <atomic>
 
-std::string TradingEngine::ApiKey ="";
-std::string TradingEngine::ApiSecret="";
-double TradingEngine::TakeProfitPercent;
-double TradingEngine::StopLossPercent;
-double TradingEngine::Quantity;
-double TradingEngine::Leverage;
-double TradingEngine::LimitPriceDifferenceFromMarketPrice;
-std::string TradingEngine::Symbol;
-double TradingEngine::EmaPeriod;
-std::ofstream* TradingEngine::OutputFile;
-std::atomic<int> TradingEngine::AttemptsForLevel;
+namespace TradingEngine{
+    std::string ApiKey ="";
+    std::string ApiSecret="";
+    double TakeProfitPercent;
+    double StopLossPercent;
+    double Quantity;
+    double Leverage;
+    double LimitPriceDifferenceFromMarketPrice;
+    std::string Symbol;
+    double EmaPeriod;
+    std::ofstream* OutputFile;
+    std::atomic<int> AttemptsForLevel;
+    std::mutex TradeLock;
+}
 
 int main(int argc, char* argv[])
 {
