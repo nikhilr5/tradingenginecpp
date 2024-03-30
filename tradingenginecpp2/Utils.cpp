@@ -7,6 +7,7 @@
 #include "tradingenginecpp2.h"
 #include <ctime>
 #include <iomanip>
+#include <thread>
 
 
 
@@ -78,7 +79,7 @@ std::string GetLocalTime(long long ts) {
 	return timeStr;
 }
 
-int GetEngineParameters() {
+int GetEngineParameters(char*  argv[]) {
 	std::string outputFileDirectory = "";
     try {
         Analyzer::Level = std::stod(argv[1]);
@@ -94,10 +95,26 @@ int GetEngineParameters() {
 
         TradingEngine::ApiKey = std::getenv("BYBIT_API_KEY");
         TradingEngine::ApiSecret = std::getenv("BYBIT_API_SECRET");
+
+		std::string currentTimeStr = GetCurrentTimeStr();
+		TradingEngine::OutputFile = new std::ofstream(outputFileDirectory + "/engine_" + currentTimeStr+".txt");
+		if (!TradingEngine::OutputFile->is_open()) {
+			std::cerr << "Error: Unable to open file!" << std::endl;
+			delete TradingEngine::OutputFile; // Clean up the allocated memory
+			return 1;
+		}
+
 		return 0;
     }
     catch (const std::exception& e){
         std::cout << "Exception caught when trying to grab all parameters needed for executable. Exception=" << e.what() << std::endl;
         return -1;
+    }
+}
+
+void FlushToFile() {
+	while (true) {
+        std::this_thread::sleep_for(std::chrono::seconds(30)); //flush file every 30 seconds
+        TradingEngine::OutputFile->flush();
     }
 }

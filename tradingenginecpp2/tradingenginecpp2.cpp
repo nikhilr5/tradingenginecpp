@@ -30,17 +30,9 @@ namespace TradingEngine{
 
 int main(int argc, char* argv[])
 {
-    int success = GetEngineParameters();
+    int success = GetEngineParameters(argv);
     if (success != 0)
         return success;
-
-    std::string currentTimeStr = GetCurrentTimeStr();
-    TradingEngine::OutputFile = new std::ofstream(outputFileDirectory + "/engine_" + currentTimeStr+".txt");
-    if (!TradingEngine::OutputFile->is_open()) {
-        std::cerr << "Error: Unable to open file!" << std::endl;
-        delete TradingEngine::OutputFile; // Clean up the allocated memory
-        return 1;
-    }
 
     std::cout << "Setting support level to " << Analyzer::Level << std::endl;
 
@@ -51,10 +43,8 @@ int main(int argc, char* argv[])
     std::thread orderbook_thread(ConnectOrderbookWebsocket, "/v5/public/linear", R"({"op": "subscribe", "args": ["orderbook.200.)" + TradingEngine::Symbol + R"("]})");
     std::thread kline_thread(ConnectKlineWebsocket, "/v5/public/linear", R"({"op": "subscribe", "args": ["kline.1.)" + TradingEngine::Symbol + R"("]})");
 
-    while (true) {
-        std::this_thread::sleep_for(std::chrono::seconds(30)); //flush file every 30 seconds
-        TradingEngine::OutputFile->flush();
-    }
+    FlushToFile();
+    
     orderbook_thread.join();
     kline_thread.join();
     private_data_thread.join();

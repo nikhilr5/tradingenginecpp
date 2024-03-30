@@ -18,4 +18,6 @@ std::string GetCurrentTimeStr();
 
 std::string GetLocalTime(long long ts);
 
-int GetEngineParameters();
+int GetEngineParameters(char* argv[]);
+
+void FlushToFile();
