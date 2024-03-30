@@ -30,23 +30,9 @@ namespace TradingEngine{
 
 int main(int argc, char* argv[])
 {
-    std::string outputFileDirectory = "";
-    try {
-        Analyzer::Level = std::stod(argv[1]);
-        TradingEngine::TakeProfitPercent = std::stod(argv[2]);
-        TradingEngine::StopLossPercent = std::stod(argv[3]);
-        TradingEngine::Quantity = std::stod(argv[4]);
-        TradingEngine::Leverage = std::stod(argv[5]);
-        TradingEngine::LimitPriceDifferenceFromMarketPrice = std::stod(argv[6]);
-        TradingEngine::Symbol = argv[7];
-        TradingEngine::EmaPeriod = std::stod(argv[8]);
-        outputFileDirectory = argv[9];
-        TradingEngine::AttemptsForLevel = std::stoi(argv[10]);
-    }
-    catch (const std::exception& e){
-        std::cout << "Exception caught when trying to grab all parameters needed for executable. Exception=" << e.what() << std::endl;
-        return -1;
-    }
+    int success = GetEngineParameters();
+    if (success != 0)
+        return success;
 
     std::string currentTimeStr = GetCurrentTimeStr();
     TradingEngine::OutputFile = new std::ofstream(outputFileDirectory + "/engine_" + currentTimeStr+".txt");
@@ -55,9 +41,6 @@ int main(int argc, char* argv[])
         delete TradingEngine::OutputFile; // Clean up the allocated memory
         return 1;
     }
-
-    TradingEngine::ApiKey = std::getenv("BYBIT_API_KEY");
-    TradingEngine::ApiSecret = std::getenv("BYBIT_API_SECRET");
 
     std::cout << "Setting support level to " << Analyzer::Level << std::endl;
 

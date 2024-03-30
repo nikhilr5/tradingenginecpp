@@ -17,3 +17,5 @@ std::string GeneratePostSignature(const nlohmann::json& parameters, std::string 
 std::string GetCurrentTimeStr();
 
 std::string GetLocalTime(long long ts);
+
+int GetEngineParameters();

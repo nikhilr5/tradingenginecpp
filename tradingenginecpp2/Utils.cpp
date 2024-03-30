@@ -77,3 +77,27 @@ std::string GetLocalTime(long long ts) {
 	strftime(timeStr, sizeof(timeStr), "%m-%d-%Y %H:%M:S", local_time);
 	return timeStr;
 }
+
+int GetEngineParameters() {
+	std::string outputFileDirectory = "";
+    try {
+        Analyzer::Level = std::stod(argv[1]);
+        TradingEngine::TakeProfitPercent = std::stod(argv[2]);
+        TradingEngine::StopLossPercent = std::stod(argv[3]);
+        TradingEngine::Quantity = std::stod(argv[4]);
+        TradingEngine::Leverage = std::stod(argv[5]);
+        TradingEngine::LimitPriceDifferenceFromMarketPrice = std::stod(argv[6]);
+        TradingEngine::Symbol = argv[7];
+        TradingEngine::EmaPeriod = std::stod(argv[8]);
+        outputFileDirectory = argv[9];
+        TradingEngine::AttemptsForLevel = std::stoi(argv[10]);
+
+        TradingEngine::ApiKey = std::getenv("BYBIT_API_KEY");
+        TradingEngine::ApiSecret = std::getenv("BYBIT_API_SECRET");
+		return 0;
+    }
+    catch (const std::exception& e){
+        std::cout << "Exception caught when trying to grab all parameters needed for executable. Exception=" << e.what() << std::endl;
+        return -1;
+    }
+}
