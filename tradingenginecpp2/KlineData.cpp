@@ -11,7 +11,9 @@ using json = nlohmann::json;
 // Constructor definition
 KlineData::KlineData() {}
 
-// Member function definition
+/*
+Grabs all kline data on close of bar and then calls analzyer function UpdateEmaInfo to handle updates
+*/
 void KlineData::HandleUpdate(std::string update) {
 	try {
 		json snapshot = json::parse(update);

@@ -141,6 +141,11 @@ void SendPingMessage(Exchange* private_ws) {
     }
 }
 
+/*
+Connects to orderbook ws
+Calls update indicators every ws update
+Checks if all indicators pass if so places buy trade
+*/
 void ConnectOrderbookWebsocket(const char* extension, std::string subscription_message) {
     while (true) {
         Exchange orderData{ "bybit", "stream.bybit.com" };

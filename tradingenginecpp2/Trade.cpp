@@ -12,6 +12,9 @@
 
 const std::string RecvWindow = "10000";
 
+/*
+calculates all trade parameters based on engine parameters and executes trade
+*/
 void PlaceTrade(std::string side) {
     double quantity = CalculateQuantity();
     Log("Placing Order to buy symbol="+ TradingEngine::Symbol + " atempted tradeAmount="+ std::to_string(TradingEngine::TradeAmount) + ", actual quantity="+ std::to_string(quantity));

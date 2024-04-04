@@ -19,6 +19,10 @@ namespace Analyzer {
 	std::mutex IndicatorLock;
 	double TotalPnl = 0;
 
+	/*
+	Called in after orderbook data is updates (every 200 ms) in WebsocketConnection.cpp
+	Checks if all parameters passes and uses locks to avoid race conditions
+	*/
 	bool DoIndicatorsPass() {
 		std::lock_guard<std::mutex> guard(IndicatorLock); //scoped lock
 		std::lock_guard<std::mutex> guard2(TradingEngine::TradeLock);
@@ -35,7 +39,10 @@ namespace Analyzer {
 		return false;
 	}
 
-
+	/*
+	Only gets called when kline data is updated 
+	recalculates the ema line and calls function to check for locally minima
+	*/
 	void UpdateEmaInfo(double close, long long currentTime) {
 
 		EmaCount += 1;
@@ -59,6 +66,10 @@ namespace Analyzer {
 		//Log("")
 	}
 
+	/*
+	Only checks for local minima if the below support level
+	Checks by seeing if previous derrivate is less than 0 and current is great then we know we have a minima
+	*/
 	void CheckForLocalMinima() {
 		std::lock_guard<std::mutex> guard(IndicatorLock); //scoped lock
 		if (CrossedLevel) {
@@ -70,6 +81,12 @@ namespace Analyzer {
 		}
 	}
 
+	/*
+	Called every time orderbook data is updated (200ms)
+	Use locks to avoid race condition
+	checks market price relative to parameters
+	if already below and reclaimed but not all constrained pass then not updating indicators
+	*/
 	void UpdateIndicators() {
 		std::lock_guard<std::mutex> guard(IndicatorLock); //scoped lock
 

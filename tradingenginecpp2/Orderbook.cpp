@@ -14,7 +14,10 @@ std::atomic <double> Orderbook::MarketPrice;
 Orderbook::Orderbook() {
 }
 
-// Member function definition
+/*
+1. Keeps track of a bid and ask dictionary 200 depth each way
+2. updates every 200ms the market price
+*/
 void Orderbook::HandleUpdate(std::string update) {
     try {
         json snapshot = json::parse(update);

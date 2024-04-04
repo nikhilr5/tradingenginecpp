@@ -28,6 +28,9 @@ namespace TradingEngine{
     std::mutex TradeLock;
 }
 
+/*
+main function that connects to 3 websocket sockets on three seperate threads
+*/
 int main(int argc, char* argv[])
 {
     int success = GetEngineParameters(argv);
