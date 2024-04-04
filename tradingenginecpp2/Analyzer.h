@@ -16,6 +16,7 @@ namespace Analyzer {
 	extern std::atomic<double> Derrivative;
 	extern std::atomic<double> PreviousDerrivative;
 	extern std::mutex IndicatorLock;
+	extern double TotalPnl;
 
 	bool DoIndicatorsPass();
 

@@ -18,5 +18,10 @@ public:
     void HandleUpdate(std::string update);
 
 private:
+
+    double buyPositionValue;
+    double entryMarkPrice;
+
     void HandlePositionUpdate(json snapshot);
+    double calculate_pnl(double exitMarketPrice);
 };

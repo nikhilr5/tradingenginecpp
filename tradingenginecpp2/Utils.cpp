@@ -75,7 +75,7 @@ std::string GetLocalTime(long long ts) {
     std::tm* local_time = std::localtime(&time);
 
 	char timeStr[100];
-	strftime(timeStr, sizeof(timeStr), "%m-%d-%Y %H:%M:S", local_time);
+	strftime(timeStr, sizeof(timeStr), "%m-%d-%Y %H:%M:%S", local_time);
 	return timeStr;
 }
 
@@ -85,7 +85,7 @@ int GetEngineParameters(char*  argv[]) {
         Analyzer::Level = std::stod(argv[1]);
         TradingEngine::TakeProfitPercent = std::stod(argv[2]);
         TradingEngine::StopLossPercent = std::stod(argv[3]);
-        TradingEngine::Quantity = std::stod(argv[4]);
+        TradingEngine::TradeAmount = std::stod(argv[4]);
         TradingEngine::Leverage = std::stod(argv[5]);
         TradingEngine::LimitPriceDifferenceFromMarketPrice = std::stod(argv[6]);
         TradingEngine::Symbol = argv[7];
@@ -117,4 +117,9 @@ void FlushToFile() {
         std::this_thread::sleep_for(std::chrono::seconds(30)); //flush file every 30 seconds
         TradingEngine::OutputFile->flush();
     }
+}
+
+void Log(std::string log) {
+		std::cout << log << std::endl;
+		*(TradingEngine::OutputFile) << log << std::endl;
 }

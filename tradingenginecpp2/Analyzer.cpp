@@ -17,6 +17,7 @@ namespace Analyzer {
 	std::atomic<double> Derrivative;
 	std::atomic<int> EmaCount = 0;
 	std::mutex IndicatorLock;
+	double TotalPnl = 0;
 
 	bool DoIndicatorsPass() {
 		std::lock_guard<std::mutex> guard(IndicatorLock); //scoped lock
@@ -53,10 +54,9 @@ namespace Analyzer {
 		CheckForLocalMinima();
 
 		auto localTime = GetLocalTime(currentTime);
-		std::ostringstream oss;
-		oss << "EmaPrice=" << EmaPrice << " derrivative=" << Derrivative << " MarketPrice=" << Orderbook::MarketPrice << " Timestamp=" << localTime;
-		std::cout << oss.str() << std::endl;
-		*(TradingEngine::OutputFile) << oss.str() << std::endl;
+		//std::ostringstream oss;
+		//oss << "EmaPrice=" << EmaPrice << " derrivative=" << Derrivative << " MarketPrice=" << Orderbook::MarketPrice << " Timestamp=" << localTime;
+		//Log("")
 	}
 
 	void CheckForLocalMinima() {
@@ -64,8 +64,8 @@ namespace Analyzer {
 		if (CrossedLevel) {
 			if (PreviousDerrivative < 0 && Derrivative > 0)
 			{
-				std::cout << "Hit local min for EMA line at timestamp=" << EmaTime << ", minima=" << EmaPrice << std::endl;
-				MostRecentEmaPriceMinima.store(EmaPrice.load());
+				std::string logString =  "Local minima detected for EMA line at timestamp=" + std::to_string(EmaTime) + ", minima=" + std::to_string(EmaPrice);
+				Log(logString);
 			}
 		}
 	}
@@ -73,18 +73,23 @@ namespace Analyzer {
 	void UpdateIndicators() {
 		std::lock_guard<std::mutex> guard(IndicatorLock); //scoped lock
 
+		auto now = std::chrono::system_clock::now();
+    	long long epoch_time = std::chrono::system_clock::to_time_t(now);
+		auto localTime = GetLocalTime(epoch_time);
+
 		if (TradePlaced)
 			return;
 
 		if (!CrossedLevel && Orderbook::MarketPrice < Level)
 		{
-			std::cout << "Crossed below support level. MarketPrice=" << Orderbook::MarketPrice << " , Level=" << Level << std::endl;
+			Log("Market Price crossed below support level. MarketPrice=" + std::to_string(Orderbook::MarketPrice) + " , Level=" + std::to_string(Level) + ", Time="+ localTime);
 			CrossedLevel = true;
 		}
 		else if (CrossedLevel && Orderbook::MarketPrice > Level)
 		{
-			std::cout << "Support level reclaim without all constraints being met. Mp=" << Orderbook::MarketPrice << ", lastMinima=" << MostRecentEmaPriceMinima << ", Level= " << Level
-				<< ", CrossedLevel=" << CrossedLevel << ", time= get time";
+			std::string logString = "Support level reclaim without all constraints being met. Mp=" + std::to_string(Orderbook::MarketPrice) + ", lastMinima=" + 
+				std::to_string(MostRecentEmaPriceMinima) +", Level= "+ std::to_string(Level) + ", CrossedLevel=" + std::to_string(CrossedLevel) + ", time" + localTime;
+			Log(logString);
 			CrossedLevel = false;
 			MostRecentEmaPriceMinima = -1;
 		}

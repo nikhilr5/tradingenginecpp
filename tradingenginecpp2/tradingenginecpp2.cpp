@@ -18,7 +18,7 @@ namespace TradingEngine{
     std::string ApiSecret="";
     double TakeProfitPercent;
     double StopLossPercent;
-    double Quantity;
+    double TradeAmount;
     double Leverage;
     double LimitPriceDifferenceFromMarketPrice;
     std::string Symbol;
@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
     std::thread kline_thread(ConnectKlineWebsocket, "/v5/public/linear", R"({"op": "subscribe", "args": ["kline.1.)" + TradingEngine::Symbol + R"("]})");
 
     FlushToFile();
-    
+
     orderbook_thread.join();
     kline_thread.join();
     private_data_thread.join();

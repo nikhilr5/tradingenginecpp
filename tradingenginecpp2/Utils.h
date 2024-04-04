@@ -21,3 +21,5 @@ std::string GetLocalTime(long long ts);
 int GetEngineParameters(char* argv[]);
 
 void FlushToFile();
+
+void Log(std::string log);

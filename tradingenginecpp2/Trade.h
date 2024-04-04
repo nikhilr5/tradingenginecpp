@@ -10,3 +10,5 @@ double CalculateTakeProfit();
 double CalculateLimitPrice();
 
 void SetLeverage();
+
+double CalculateQuantity();

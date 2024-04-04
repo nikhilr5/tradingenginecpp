@@ -8,12 +8,13 @@
 #include "Utils.h"
 #include "tradingenginecpp2.h"
 #include "Orderbook.h"
+#include <cmath>
 
 const std::string RecvWindow = "10000";
 
 void PlaceTrade(std::string side) {
-    
-    std::cout << "Placing Order to buy symbol=" << TradingEngine::Symbol << " quantity=" << TradingEngine::Quantity << std::endl;
+    double quantity = CalculateQuantity();
+    Log("Placing Order to buy symbol="+ TradingEngine::Symbol + " atempted tradeAmount="+ std::to_string(TradingEngine::TradeAmount) + ", actual quantity="+ std::to_string(quantity));
     std::string limitPrice = std::to_string(CalculateLimitPrice());
     std::string takeProfit = std::to_string(CalculateTakeProfit());
     std::string stopLoss = std::to_string(CalculateStopLoss());
@@ -28,7 +29,7 @@ void PlaceTrade(std::string side) {
         {"price", limitPrice},
         {"takeProfit", takeProfit},
         {"stopLoss", stopLoss},
-        {"qty", std::to_string(TradingEngine::Quantity)},
+        {"qty", std::to_string(quantity)},
         {"timeInForce", "GTC"}
     };
     auto timestamp = GetTimestamp();
@@ -63,6 +64,15 @@ double CalculateTakeProfit(){
 double CalculateLimitPrice(){
     double mp = Orderbook::MarketPrice;
     return mp * (1 + TradingEngine::LimitPriceDifferenceFromMarketPrice);
+}
+
+/*
+Converts TradeAmount to quantity for coin. Rounding will cause TradeAmount to not be exact to quantity value since precision is to the 100th for bybit
+*/
+double CalculateQuantity() {
+    double mp = Orderbook::MarketPrice;
+    double quant = TradingEngine::TradeAmount / mp;
+    return std::floor(quant * 100) / 100; //round down
 }
 
 void SetLeverage() {
