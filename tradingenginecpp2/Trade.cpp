@@ -39,8 +39,9 @@ void PlaceTrade(std::string side) {
     std::string signature = GeneratePostSignature(parameters, timestamp, RecvWindow);
     std::string jsonPayload = parameters.dump();
 
+    Log("Placing trade. Trade data: " + jsonPayload);
 
-    httplib::SSLClient client("api.bybit.com", 443); // 443 is the default port for HTTPS
+    httplib::SSLClient client(TradingEngine::ConnectionUrlApi, 443); // 443 is the default port for HTTPS
     httplib::Headers headers = {
         {"X-BAPI-API-KEY", TradingEngine::ApiKey},
         {"X-BAPI-SIGN", signature},
@@ -93,7 +94,7 @@ void SetLeverage() {
     std::string jsonPayload = parameters.dump();
 
 
-    httplib::SSLClient client("api.bybit.com", 443); // 443 is the default port for HTTPS
+    httplib::SSLClient client(TradingEngine::ConnectionUrlApi, 443); // 443 is the default port for HTTPS
     httplib::Headers headers = {
         {"X-BAPI-API-KEY", TradingEngine::ApiKey},
         {"X-BAPI-SIGN", signature},

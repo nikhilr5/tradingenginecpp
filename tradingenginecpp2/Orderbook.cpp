@@ -66,5 +66,5 @@ void Orderbook::SetMarketPrice() {
     if (Bids.empty() || Asks.empty())
         MarketPrice = -1;
 
-    Orderbook::MarketPrice = Bids.rbegin()->first;
+    Orderbook::MarketPrice = (Bids.rbegin()->first + Asks.begin()->first) / 2; // (highest bid + lowest ask) /2 
 }

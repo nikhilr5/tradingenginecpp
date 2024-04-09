@@ -26,7 +26,7 @@ void KlineData::HandleUpdate(std::string update) {
 
 		long long timestamp = data["timestamp"];
 		double close = std::stod(closeStr);
-		bool confirm = data["confirm"];
+		bool confirm = data["confirm"]; //confirm first before parsing for performance
 		double high = std::stod(highStr);
 		double low = std::stod(lowStr);
 		double open = std::stod(openStr);

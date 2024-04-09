@@ -16,6 +16,9 @@ namespace TradingEngine{
     extern double EmaPeriod;
     extern std::ofstream* OutputFile;
     extern std::atomic<int> AttemptsForLevel;
+    extern bool UseMainnet;
+    extern std::string ConnectionUrlWs;
+    extern std::string ConnectionUrlApi;
     
     extern std::mutex TradeLock;
 }

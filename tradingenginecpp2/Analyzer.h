@@ -18,12 +18,12 @@ namespace Analyzer {
 	extern std::mutex IndicatorLock;
 	extern double TotalPnl;
 
-	bool DoIndicatorsPass();
+	bool DoConditionsPass();
 
 	void UpdateEmaInfo(double close, long long currentTime);
 
 
 	void CheckForLocalMinima();
 
-	void UpdateIndicators();
+	void UpdateConditions();
 }

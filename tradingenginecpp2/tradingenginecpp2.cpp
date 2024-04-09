@@ -26,6 +26,9 @@ namespace TradingEngine{
     std::ofstream* OutputFile;
     std::atomic<int> AttemptsForLevel;
     std::mutex TradeLock;
+    bool UseMainnet;
+    std::string ConnectionUrlWs;
+    std::string ConnectionUrlApi;
 }
 
 /*

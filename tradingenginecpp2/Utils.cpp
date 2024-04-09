@@ -92,9 +92,20 @@ int GetEngineParameters(char*  argv[]) {
         TradingEngine::EmaPeriod = std::stod(argv[8]);
         outputFileDirectory = argv[9];
         TradingEngine::AttemptsForLevel = std::stoi(argv[10]);
+		TradingEngine::UseMainnet = (std::stoi(argv[11]) == 1);
 
-        TradingEngine::ApiKey = std::getenv("BYBIT_API_KEY");
-        TradingEngine::ApiSecret = std::getenv("BYBIT_API_SECRET");
+		if (TradingEngine::UseMainnet) {
+			TradingEngine::ApiKey = std::getenv("BYBIT_API_KEY");
+			TradingEngine::ApiSecret = std::getenv("BYBIT_API_SECRET");
+			TradingEngine::ConnectionUrlWs ="stream.bybit.com";
+			TradingEngine::ConnectionUrlApi ="api.bybit.com";
+		} 
+		else {
+			TradingEngine::ApiKey = std::getenv("TESNET_BYBIT_API_KEY");
+			TradingEngine::ApiSecret = std::getenv("TESTNET_BYBIT_API_SECRET");
+			TradingEngine::ConnectionUrlWs ="stream-testnet.bybit.com";
+			TradingEngine::ConnectionUrlApi ="api-testnet.bybit.com";
+		}
 
 		std::string currentTimeStr = GetCurrentTimeStr();
 		TradingEngine::OutputFile = new std::ofstream(outputFileDirectory + "/engine_" + currentTimeStr+".txt");

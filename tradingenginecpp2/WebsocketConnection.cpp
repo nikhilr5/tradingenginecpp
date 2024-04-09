@@ -148,12 +148,12 @@ Checks if all indicators pass if so places buy trade
 */
 void ConnectOrderbookWebsocket(const char* extension, std::string subscription_message) {
     while (true) {
-        Exchange orderData{ "bybit", "stream.bybit.com" };
+        Exchange orderData{ "bybit", TradingEngine::ConnectionUrlWs};
         std::shared_ptr<Orderbook> orderbook = std::make_shared<Orderbook>();
 
 
         try {
-            orderData.init_webSocket("stream.bybit.com", "443", extension);
+            orderData.init_webSocket(TradingEngine::ConnectionUrlWs, "443", extension);
             if (orderData.is_socket_open()) {
                 orderData.write_Socket(subscription_message);
             }
@@ -163,9 +163,7 @@ void ConnectOrderbookWebsocket(const char* extension, std::string subscription_m
                 orderData.read_Socket();
                 orderbook->HandleUpdate(orderData.get_socket_data());
 
-                Analyzer::UpdateIndicators();
-                if (Analyzer::DoIndicatorsPass()) //check if indictors pass to place trade on ever orderbook update
-                    PlaceTrade("Buy");
+                Analyzer::UpdateConditions(); //update conditions and check if able to place trade
 
                 orderData.buffer_clear();
                 //std::cout << MarketPrice << std::endl;
@@ -181,11 +179,11 @@ void ConnectOrderbookWebsocket(const char* extension, std::string subscription_m
 
 void ConnectKlineWebsocket(const char* extension, std::string subscription_message) {
     while (true) {
-        Exchange ws_klineData{ "bybit", "stream.bybit.com" };
+        Exchange ws_klineData{ "bybit", TradingEngine::ConnectionUrlWs };
         std::shared_ptr<KlineData> klineData = std::make_shared<KlineData>();
 
         try {
-            ws_klineData.init_webSocket("stream.bybit.com", "443", extension);
+            ws_klineData.init_webSocket(TradingEngine::ConnectionUrlWs, "443", extension);
             if (ws_klineData.is_socket_open()) {
                 ws_klineData.write_Socket(subscription_message);
             }
@@ -206,10 +204,10 @@ void ConnectKlineWebsocket(const char* extension, std::string subscription_messa
 
 void ConnectPrivateWebsocket() {
     while (true) {
-        Exchange ws_private{"bybit", "stream.bybit.com"};
+        Exchange ws_private{"bybit", TradingEngine::ConnectionUrlWs};
         std::unique_ptr<PrivateData> privateData = std::make_unique<PrivateData>();
         try {
-            ws_private.init_webSocket("stream.bybit.com", "443", "/v5/private");
+            ws_private.init_webSocket(TradingEngine::ConnectionUrlWs, "443", "/v5/private");
             ws_private.authenticate();
 
             if (ws_private.is_socket_open()) {
@@ -226,7 +224,6 @@ void ConnectPrivateWebsocket() {
             }
             send_ping_thread.join();
             ws_private.webSocket_close();
-            
 
         } catch (std::exception const& e){
             std::cerr << "Error: " << e.what() << std::endl;

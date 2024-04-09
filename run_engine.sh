@@ -15,6 +15,7 @@ Symbol="ETHUSDT"
 EmaPeriod="25"
 LogFileDirectoryLocation="./Logs"
 AttemptsForLevel="3"
+UseMainnet="0" # 1 = true
 
 # Run the executable with the provided arguments
-./tradingenginecpp2exe "$Level" "$TakeProfitPercent" "$StopLossPercent" "$TradeAmount" "$Leverage" "$LimitPriceDifferenceFromMarketPrice" "$Symbol" "$EmaPeriod" "$LogFileDirectoryLocation" "$AttemptsForLevel"
+./tradingenginecpp2exe "$Level" "$TakeProfitPercent" "$StopLossPercent" "$TradeAmount" "$Leverage" "$LimitPriceDifferenceFromMarketPrice" "$Symbol" "$EmaPeriod" "$LogFileDirectoryLocation" "$AttemptsForLevel" "$UseMainnet"

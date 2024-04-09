@@ -3,6 +3,7 @@
 #include "Utils.h"
 #include <iostream>
 #include "tradingenginecpp2.h"
+#include "Trade.h"
 
 namespace Analyzer {
 	double Level;
@@ -23,7 +24,7 @@ namespace Analyzer {
 	Called in after orderbook data is updates (every 200 ms) in WebsocketConnection.cpp
 	Checks if all parameters passes and uses locks to avoid race conditions
 	*/
-	bool DoIndicatorsPass() {
+	bool DoConditionsPass() {
 		std::lock_guard<std::mutex> guard(IndicatorLock); //scoped lock
 		std::lock_guard<std::mutex> guard2(TradingEngine::TradeLock);
 
@@ -46,8 +47,8 @@ namespace Analyzer {
 	void UpdateEmaInfo(double close, long long currentTime) {
 
 		EmaCount += 1;
-		PreviousEmaPrice.store(EmaPrice.load());
-		EmaPrice = CalculateEma(close, PreviousEmaPrice, EmaCount < TradingEngine::EmaPeriod ? EmaCount.load() : TradingEngine::EmaPeriod);
+		PreviousEmaPrice.store(EmaPrice.load()); // previousemaprice = emaprice;
+		EmaPrice = CalculateEma(close, PreviousEmaPrice, EmaCount < TradingEngine::EmaPeriod ? EmaCount.load() : TradingEngine::EmaPeriod); // pull previous data instead?
 
 		PreviousEmaTime.store(EmaTime.load());
 		EmaTime = currentTime;
@@ -55,15 +56,17 @@ namespace Analyzer {
 		if (PreviousEmaPrice == 0)
 			return;
 
-		PreviousDerrivative.store(Derrivative.load());
+		PreviousDerrivative.store(Derrivative.load()); //previous_grad = current_grad
 		Derrivative = CalculateEmaDerrivative();
 
 		CheckForLocalMinima();
 
-		auto localTime = GetLocalTime(currentTime);
-		//std::ostringstream oss;
-		//oss << "EmaPrice=" << EmaPrice << " derrivative=" << Derrivative << " MarketPrice=" << Orderbook::MarketPrice << " Timestamp=" << localTime;
-		//Log("")
+		if (EmaCount % 60 == 0){
+			auto localTime = GetLocalTime(currentTime);
+			std::ostringstream oss;
+			oss << "EmaPrice=" << EmaPrice << " derrivative=" << Derrivative << " MarketPrice=" << Orderbook::MarketPrice << " Timestamp=" << localTime;
+			Log(oss.str());
+		}
 	}
 
 	/*
@@ -77,6 +80,7 @@ namespace Analyzer {
 			{
 				std::string logString =  "Local minima detected for EMA line at timestamp=" + std::to_string(EmaTime) + ", minima=" + std::to_string(EmaPrice);
 				Log(logString);
+				MostRecentEmaPriceMinima.store(EmaPrice.load()); //MostRecentEmaPriceMinima = EmaPrice;
 			}
 		}
 	}
@@ -87,14 +91,14 @@ namespace Analyzer {
 	checks market price relative to parameters
 	if already below and reclaimed but not all constrained pass then not updating indicators
 	*/
-	void UpdateIndicators() {
+	void UpdateConditions() {
 		std::lock_guard<std::mutex> guard(IndicatorLock); //scoped lock
 
 		auto now = std::chrono::system_clock::now();
     	long long epoch_time = std::chrono::system_clock::to_time_t(now);
 		auto localTime = GetLocalTime(epoch_time);
 
-		if (TradePlaced)
+		if (TradePlaced) //were long but still want to update CrossLevel if marketprice below level?
 			return;
 
 		if (!CrossedLevel && Orderbook::MarketPrice < Level)
@@ -102,6 +106,11 @@ namespace Analyzer {
 			Log("Market Price crossed below support level. MarketPrice=" + std::to_string(Orderbook::MarketPrice) + " , Level=" + std::to_string(Level) + ", Time="+ localTime);
 			CrossedLevel = true;
 		}
+
+		if (DoConditionsPass()) // check if pass before resetting 
+			PlaceTrade("Buy");
+
+
 		else if (CrossedLevel && Orderbook::MarketPrice > Level)
 		{
 			std::string logString = "Support level reclaim without all constraints being met. Mp=" + std::to_string(Orderbook::MarketPrice) + ", lastMinima=" + 
