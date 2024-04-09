@@ -1,3 +1,6 @@
+#include "PrivateData.h"
+#include <string>
+#include <iostream>
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/beast.hpp>
@@ -12,7 +15,7 @@
 #include "tradingenginecpp2.h"
 #include <chrono>
 #include <nlohmann/json.hpp>
-#include "PrivateData.h"
+
 
 namespace net = boost::asio;
 namespace ssl = net::ssl;
@@ -27,111 +30,120 @@ using Response = http::response<http::dynamic_body>;
 using json = nlohmann::json;
 
 
-class Exchange {
+using Ex = Exchange;
 
-public:
-    Exchange(std::string name, const std::string& http_host)
-        : m_name(std::move(name))
-    {
-        init_http(http_host);
+Ex::Exchange(std::string name, const std::string& http_host)
+    : m_name(std::move(name))
+{
+    init_http(http_host);
+}
+
+void Ex::init_http(std::string const& host)
+{
+    const auto results{ resolver.resolve(host, "443") };
+    get_lowest_layer(stream).connect(results);
+    // Set SNI Hostname (many hosts need this to handshake successfully)
+    if (!SSL_set_tlsext_host_name(stream.native_handle(), host.c_str())) {
+        boost::system::error_code ec{
+            static_cast<int>(::ERR_get_error()),
+            boost::asio::error::get_ssl_category() };
+        throw boost::system::system_error{ ec };
     }
+    stream.handshake(ssl::stream_base::client);
+}
 
-    void init_http(std::string const& host)
-    {
-        const auto results{ resolver.resolve(host, "443") };
-        get_lowest_layer(stream).connect(results);
-        // Set SNI Hostname (many hosts need this to handshake successfully)
-        if (!SSL_set_tlsext_host_name(stream.native_handle(), host.c_str())) {
-            boost::system::error_code ec{
-                static_cast<int>(::ERR_get_error()),
-                boost::asio::error::get_ssl_category() };
-            throw boost::system::system_error{ ec };
+void Ex::init_webSocket(std::string const& host, std::string const& port,
+    const char* p)
+{
+    // Set SNI Hostname (many hosts need this to handshake successfully)
+    if (!SSL_set_tlsext_host_name(ws.next_layer().native_handle(),
+        host.c_str()))
+        throw beast::system_error(
+            beast::error_code(static_cast<int>(::ERR_get_error()),
+                net::error::get_ssl_category()),
+            "Failed to set SNI Hostname");
+    auto const results = resolver_webSocket.resolve(host, port);
+    net::connect(ws.next_layer().next_layer(), results.begin(),
+        results.end());
+    ws.next_layer().handshake(ssl::stream_base::client);
+
+    ws.handshake(host, p);
+}
+
+void Ex::read_Socket() { ws.read(buffer); }
+
+bool Ex::is_socket_open()
+{
+    if (ws.is_open())
+        return true;
+    return false;
+}
+
+template <typename DataHandler>
+void Ex::connect(DataHandler dh) {
+    while (true) {
+        try {
+            init_webSocket(TradingEngine::ConnectionUrlWs, "443", "/v5/private");
+            authenticate();
+
+            if (is_socket_open()) {
+                std::string subscription_message = R"({"op": "subscribe", "args": ["order", "position"]})";
+                write_Socket(subscription_message);
+            }
+            std::cout << "Connected to private websocket..." << std::endl;
+            while (true) {
+                read_Socket();
+                dh.HandleUpdate(get_socket_data());
+
+                buffer_clear();
+            }
+            webSocket_close();
+
+        } catch (std::exception const& e){
+            std::cerr << "Error: " << e.what() << std::endl;
         }
-        stream.handshake(ssl::stream_base::client);
     }
+}
 
-    void init_webSocket(std::string const& host, std::string const& port,
-        const char* p = "")
-    {
-        // Set SNI Hostname (many hosts need this to handshake successfully)
-        if (!SSL_set_tlsext_host_name(ws.next_layer().native_handle(),
-            host.c_str()))
-            throw beast::system_error(
-                beast::error_code(static_cast<int>(::ERR_get_error()),
-                    net::error::get_ssl_category()),
-                "Failed to set SNI Hostname");
-        auto const results = resolver_webSocket.resolve(host, port);
-        net::connect(ws.next_layer().next_layer(), results.begin(),
-            results.end());
-        ws.next_layer().handshake(ssl::stream_base::client);
+void Ex::write_Socket(const std::string& text) { ws.write(net::buffer(text)); }
 
-        ws.handshake(host, p);
+std::string Ex::get_socket_data()
+{
+    return beast::buffers_to_string(buffer.data());
+}
+void Ex::buffer_clear() { buffer.clear(); }
+
+void Ex::webSocket_close() { ws.close(websocket::close_code::none); }
+
+void Ex::authenticate()
+{
+    long long int expires = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count() + 1000;
+    
+    std::string val = "GET/realtime" + std::to_string(expires);
+
+    std::string signature = sign_message(val, TradingEngine::ApiSecret);
+
+    json auth_msg = {
+        {"op", "auth"},
+        {"args", {TradingEngine::ApiKey, expires, signature}}
+    };
+
+    write_Socket(auth_msg.dump());
+}
+
+
+std::string Ex::sign_message(const std::string& message, const std::string& secret)
+{
+    unsigned char* digest = HMAC(EVP_sha256(), secret.c_str(), secret.size(), (unsigned char*)message.c_str(), message.size(), NULL, NULL);
+
+    std::ostringstream os;
+    for (size_t i = 0; i < 32; ++i) {
+        os << std::hex << std::setw(2) << std::setfill('0') << (int)digest[i];
     }
+    return os.str();
+}
 
-    void read_Socket() { ws.read(buffer); }
-
-    bool is_socket_open()
-    {
-        if (ws.is_open())
-            return true;
-        return false;
-    }
-
-    void write_Socket(const std::string& text) { ws.write(net::buffer(text)); }
-
-    std::string get_socket_data()
-    {
-        return beast::buffers_to_string(buffer.data());
-    }
-    void buffer_clear() { buffer.clear(); }
-
-    void webSocket_close() { ws.close(websocket::close_code::none); }
-
-    void authenticate()
-    {
-        long long int expires = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now().time_since_epoch()).count() + 1000;
-        
-        std::string val = "GET/realtime" + std::to_string(expires);
-
-        std::string signature = sign_message(val, TradingEngine::ApiSecret);
-
-        json auth_msg = {
-            {"op", "auth"},
-            {"args", {TradingEngine::ApiKey, expires, signature}}
-        };
-
-        write_Socket(auth_msg.dump());
-    }
-
-private:
-    std::string     m_name;
-    net::io_context ioc;
-    ssl::context    ctx{ ssl::context::tlsv12_client };
-    tcp::resolver   resolver{ ioc };
-    Stream          stream{ ioc, ctx };
-    std::string        m_web_socket_host;
-    std::string        m_web_socket_port;
-    beast::flat_buffer buffer;
-    net::io_context    ioc_webSocket;
-    ssl::context       ctx_webSocket{ ssl::context::tlsv12_client };
-    tcp::resolver      resolver_webSocket{ ioc_webSocket };
-    websocket::stream<beast::ssl_stream<tcp::socket>> ws{ ioc_webSocket,
-                                                         ctx_webSocket };
-
-    std::string sign_message(const std::string& message, const std::string& secret)
-    {
-        unsigned char* digest = HMAC(EVP_sha256(), secret.c_str(), secret.size(), (unsigned char*)message.c_str(), message.size(), NULL, NULL);
-
-        std::ostringstream os;
-        for (size_t i = 0; i < 32; ++i) {
-            os << std::hex << std::setw(2) << std::setfill('0') << (int)digest[i];
-        }
-        return os.str();
-    }
-
-
-};
 
 void SendPingMessage(Exchange* private_ws) {
     while (true) {

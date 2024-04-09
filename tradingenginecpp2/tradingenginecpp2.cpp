@@ -1,5 +1,4 @@
 #include <iostream>
-#include "WebsocketConnection.h"
 #include <thread>
 #include <string>
 #include "Analyzer.h"
@@ -12,6 +11,8 @@
 #include <sstream>
 #include "Utils.h"
 #include <atomic>
+#include "PrivateData.h"
+#include "WebsocketConnection.h"
 
 namespace TradingEngine{
     std::string ApiKey ="";
@@ -44,6 +45,10 @@ int main(int argc, char* argv[])
 
     //set leverage
     SetLeverage();
+    
+    PrivateData privateData;
+    Exchange private_ws{"bybit", TradingEngine::ConnectionUrlWs};
+    private_ws.connect<PrivateData>(PrivateData());
 
     std::thread private_data_thread(ConnectPrivateWebsocket);
     std::thread orderbook_thread(ConnectOrderbookWebsocket, "/v5/public/linear", R"({"op": "subscribe", "args": ["orderbook.200.)" + TradingEngine::Symbol + R"("]})");
